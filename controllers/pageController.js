@@ -32,7 +32,8 @@ exports.getContactPage = (req, res) => {
     });
   }
 
-exports.sendEmail =async (req, res) => {
+exports.sendEmail = async (req, res) => {
+  try {
     const outputMessage = `
     <h1>Mail Details</h1>
     <ul>
@@ -65,10 +66,16 @@ exports.sendEmail =async (req, res) => {
       });
     
       console.log("Message sent: %s", info.messageId);
+
+      req.flash("success", "We recieved your messages successfully.")
+
       res.status(200).redirect('contact');
 
       
   }
-  main().catch(console.error);
+main ();
+} catch(err) {
+    req.flash("error", "Something Happened!")
+  }
 }
 
