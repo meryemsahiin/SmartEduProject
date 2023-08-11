@@ -2,16 +2,20 @@ const bcrypt = require('bcrypt');
 const User = require('../models/User');
 const Category = require('../models/Category');
 const Course = require('../models/Course');
+const {validationResult} = require('express-validator');
 
 exports.createUser = async (req, res) => {
   try {
     const user = await User.create(req.body);
     res.status(201).redirect('/login')
   } catch (err) {
-    res.status(400).json({
-      status: 'fail',
-      err,
-    });
+    const errors = validationResult(req);
+    console.log(errors);
+    console.log(errors.array()[0].msg);
+    for ( i = 0; i < errors.array().length; i++) {
+    req.flash("error", `${errors.array()[0].msg}`);
+    }
+    res.status(400).redirect('/register');
   }
 };
 
@@ -24,7 +28,8 @@ exports.loginUser = async (req, res) => {
 
     if (!user) {
       // Kullanıcı bulunamazsa hata mesajı döndürün
-      return res.status(400).json({ status: 'fail', message: 'Kullanıcı bulunamadı.' });
+      req.flash("error", "User is not exist!");
+      return res.status(400).redirect('/login');
     }
 
     // Kullanıcının şifresini bcrypt ile karşılaştırma
@@ -32,7 +37,8 @@ exports.loginUser = async (req, res) => {
 
     if (!passwordMatch) {
       // Şifre eşleşmezse hata mesajı
-      return res.status(400).json({ status: 'fail', message: 'Hatalı şifre.' });
+      req.flash("error", "Your password is not correct!");
+      return res.status(400).redirect('/login');
     }
 
     // Giriş başarılıysa
